@@ -8,7 +8,16 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "plugins": ["./plugins/withHardwareAcceleration", "./plugins/withRemoveOrientationRestriction"],
+    "plugins": [
+      "./plugins/withHardwareAcceleration",
+      "./plugins/withRemoveOrientationRestriction",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app opens a workout video from your library so PoseTracker can analyze it."
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -19,6 +28,7 @@
       "bundleIdentifier": "com.posetracker.demoapp",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera for real-time pose tracking during exercises.",
+        "NSPhotoLibraryUsageDescription": "This app opens a workout video from your library so PoseTracker can analyze it.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
