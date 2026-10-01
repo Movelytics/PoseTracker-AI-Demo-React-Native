@@ -1,0 +1,123 @@
+{
+  "id": "wall_sit",
+  "display_name": "Wall sit",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "duration",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 6,
+    "exit_frames": 8
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "max_thigh_y",
+    "depth_metric_profile": "knee_angle",
+    "ideal_face": 0.0,
+    "worst_face": 0.12,
+    "ideal_profile": 90,
+    "worst_profile": 125,
+    "track_phases": ["hold"]
+  },
+  "placement": {
+    "padding_horizontal": 16,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip",
+      "right_hip",
+      "left_knee",
+      "right_knee",
+      "left_ankle",
+      "right_ankle"
+    ]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "left_thigh_y", "kind": "relative_y", "a": "left_knee", "b": "left_hip" },
+        { "id": "right_thigh_y", "kind": "relative_y", "a": "right_knee", "b": "right_hip" },
+        { "id": "min_thigh_y", "kind": "min_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "max_thigh_y", "kind": "max_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "thigh_y_diff", "kind": "abs_diff", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "left_shin_y", "kind": "relative_y", "a": "left_ankle", "b": "left_knee" },
+        { "id": "right_shin_y", "kind": "relative_y", "a": "right_ankle", "b": "right_knee" },
+        { "id": "min_shin_y", "kind": "min_of", "of": ["left_shin_y", "right_shin_y"] },
+        { "id": "shin_y_diff", "kind": "abs_diff", "of": ["left_shin_y", "right_shin_y"] },
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "knees_level", "kind": "alignment_horizontal", "points": ["left_knee", "right_knee"], "side": "left" }
+      ],
+      "phase_order": ["hold", "rest"],
+      "phases": {
+        "hold": {
+          "description": "Face: hips at knee height, both shins stay long and even (feet planted)",
+          "when": {
+            "all": [
+              { "metric": "max_thigh_y", "op": "lte", "value": 0.08 },
+              { "metric": "min_thigh_y", "op": "gte", "value": -0.05 },
+              { "metric": "thigh_y_diff", "op": "lte", "value": 0.08 },
+              { "metric": "min_shin_y", "op": "gte", "value": 0.14 },
+              { "metric": "shin_y_diff", "op": "lte", "value": 0.08 },
+              { "metric": "hips_level", "op": "gte", "value": 0.65 },
+              { "metric": "knees_level", "op": "gte", "value": 0.65 }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Standing, a shin collapsed, or hips still well above the knees",
+          "when": {
+            "any": [
+              { "metric": "max_thigh_y", "op": "gt", "value": 0.1 },
+              { "metric": "thigh_y_diff", "op": "gt", "value": 0.1 },
+              { "metric": "min_shin_y", "op": "lt", "value": 0.14 },
+              { "metric": "shin_y_diff", "op": "gt", "value": 0.08 },
+              { "metric": "hips_level", "op": "lt", "value": 0.65 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "best" },
+        { "id": "hip_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "best" }
+      ],
+      "phase_order": ["hold", "rest"],
+      "phases": {
+        "hold": {
+          "description": "Profile: both chair angles at ~90° — knee (hip–knee–ankle) and hip (shoulder–hip–knee)",
+          "when": {
+            "all": [
+              { "metric": "knee_angle", "op": "gte", "value": 70 },
+              { "metric": "knee_angle", "op": "lte", "value": 110 },
+              { "metric": "hip_angle", "op": "gte", "value": 70 },
+              { "metric": "hip_angle", "op": "lte", "value": 110 }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Standing or either chair angle has opened or collapsed",
+          "when": {
+            "any": [
+              { "metric": "knee_angle", "op": "lt", "value": 70 },
+              { "metric": "knee_angle", "op": "gt", "value": 110 },
+              { "metric": "hip_angle", "op": "lt", "value": 70 },
+              { "metric": "hip_angle", "op": "gt", "value": 110 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

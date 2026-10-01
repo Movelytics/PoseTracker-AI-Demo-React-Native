@@ -1,0 +1,241 @@
+{
+  "id": "foot_to_hand",
+  "display_name": "Foot to hand",
+  "review": {
+    "skeleton": false,
+    "live": false
+  },
+  "type": "duration",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 6,
+    "exit_frames": 10,
+    "angle_metric": "flex_angle",
+    "report_peak": "max"
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "flex_angle",
+    "depth_metric_profile": "flex_angle",
+    "track_phases": [
+      "hold"
+    ],
+    "ideal_face": 80,
+    "worst_face": 10,
+    "ideal_profile": 80,
+    "worst_profile": 10
+  },
+  "placement": {
+    "padding_horizontal": 16,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "flex_angle",
+          "kind": "oriented_angle3",
+          "points": [
+            "upper_ankle",
+            "middle_hip",
+            "middle_shoulder"
+          ],
+          "side": "left"
+        },
+        {
+          "id": "left_hip_to_ankle",
+          "kind": "relative_y",
+          "a": "left_hip",
+          "b": "left_ankle"
+        },
+        {
+          "id": "right_hip_to_ankle",
+          "kind": "relative_y",
+          "a": "right_hip",
+          "b": "right_ankle"
+        },
+        {
+          "id": "min_hip_to_ankle",
+          "kind": "min_of",
+          "of": [
+            "left_hip_to_ankle",
+            "right_hip_to_ankle"
+          ]
+        },
+        {
+          "id": "max_hip_to_ankle",
+          "kind": "max_of",
+          "of": [
+            "left_hip_to_ankle",
+            "right_hip_to_ankle"
+          ]
+        },
+        {
+          "id": "hip_to_shoulder",
+          "kind": "relative_y",
+          "a": "left_hip",
+          "b": "left_shoulder"
+        },
+        {
+          "id": "left_knee_to_ankle",
+          "kind": "relative_y",
+          "a": "left_knee",
+          "b": "left_ankle"
+        },
+        {
+          "id": "right_knee_to_ankle",
+          "kind": "relative_y",
+          "a": "right_knee",
+          "b": "right_ankle"
+        },
+        {
+          "id": "min_knee_to_ankle",
+          "kind": "min_of",
+          "of": [
+            "left_knee_to_ankle",
+            "right_knee_to_ankle"
+          ]
+        },
+        {
+          "id": "ankle_span",
+          "kind": "abs_dx",
+          "a": "left_ankle",
+          "b": "right_ankle"
+        },
+        {
+          "id": "left_thigh_y",
+          "kind": "relative_y",
+          "a": "left_knee",
+          "b": "left_hip"
+        },
+        {
+          "id": "right_thigh_y",
+          "kind": "relative_y",
+          "a": "right_knee",
+          "b": "right_hip"
+        },
+        {
+          "id": "min_thigh_y",
+          "kind": "min_of",
+          "of": [
+            "left_thigh_y",
+            "right_thigh_y"
+          ]
+        },
+        {
+          "id": "max_thigh_y",
+          "kind": "max_of",
+          "of": [
+            "left_thigh_y",
+            "right_thigh_y"
+          ]
+        },
+        {
+          "id": "thigh_y_diff",
+          "kind": "abs_diff",
+          "of": [
+            "left_thigh_y",
+            "right_thigh_y"
+          ]
+        },
+        {
+          "id": "left_ankle_y",
+          "kind": "relative_y",
+          "a": "left_ankle",
+          "b": "left_hip"
+        },
+        {
+          "id": "right_ankle_y",
+          "kind": "relative_y",
+          "a": "right_ankle",
+          "b": "right_hip"
+        },
+        {
+          "id": "min_ankle_y",
+          "kind": "min_of",
+          "of": [
+            "left_ankle_y",
+            "right_ankle_y"
+          ]
+        },
+        {
+          "id": "max_ankle_y",
+          "kind": "max_of",
+          "of": [
+            "left_ankle_y",
+            "right_ankle_y"
+          ]
+        },
+        {
+          "id": "torso_tilt",
+          "kind": "tilt_from_vertical",
+          "points": [
+            "left_shoulder",
+            "left_hip"
+          ],
+          "side": "best"
+        }
+      ],
+      "phase_order": [
+        "hold",
+        "rest"
+      ],
+      "phases": {
+        "hold": {
+          "description": "Stand on one leg — the other ankle lifted toward the hands",
+          "when": {
+            "all": [
+              {
+                "metric": "min_ankle_y",
+                "op": "lte",
+                "value": 0.08
+              },
+              {
+                "metric": "max_ankle_y",
+                "op": "gte",
+                "value": 0.3
+              },
+              {
+                "metric": "min_hip_to_ankle",
+                "op": "lte",
+                "value": -0.25
+              }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Out of the stretch — standing or a different pose",
+          "when": {
+            "any": [
+              {
+                "metric": "min_ankle_y",
+                "op": "gt",
+                "value": 0.08
+              },
+              {
+                "metric": "max_ankle_y",
+                "op": "lt",
+                "value": 0.3
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

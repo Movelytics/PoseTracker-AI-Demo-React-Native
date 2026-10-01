@@ -1,0 +1,99 @@
+{
+  "id": "shoulder_deep_breath",
+  "display_name": "Shoulder deep breath",
+  "review": {
+    "skeleton": true,
+    "live": true
+  },
+  "type": "repetition",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.6,
+  "identity": {
+    "kind": "shoulder_deep_breath",
+    "same_view": true
+  },
+  "cycle": {
+    "kind": "breath",
+    "points": ["left_shoulder", "right_shoulder"],
+    "anchor": "nose",
+    "min_lift": 0.008,
+    "min_inhale": 0.008,
+    "min_turn_duration": 0.55,
+    "max_anchor_drift": 0.14,
+    "min_arm_hang": 0.008,
+    "scale_anchor": "face",
+    "max_scale_delta": 0.1
+  },
+  "placement": {
+    "padding_horizontal": 8,
+    "padding_vertical": 8,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow",
+      "right_elbow"
+    ]
+  },
+  "grade": {
+    "mode": "breath_lift",
+    "depth_metric_face": "breath_lift",
+    "ideal_face": 0.028,
+    "worst_face": 0.008,
+    "require_depth": false
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "left_arm_hang",
+          "kind": "relative_y",
+          "a": "left_elbow",
+          "b": "left_shoulder"
+        },
+        {
+          "id": "right_arm_hang",
+          "kind": "relative_y",
+          "a": "right_elbow",
+          "b": "right_shoulder"
+        },
+        {
+          "id": "left_nose_gap",
+          "kind": "relative_y",
+          "a": "left_shoulder",
+          "b": "nose"
+        },
+        {
+          "id": "right_nose_gap",
+          "kind": "relative_y",
+          "a": "right_shoulder",
+          "b": "nose"
+        },
+        { "id": "min_arm_hang", "kind": "min_of", "of": ["left_arm_hang", "right_arm_hang"] },
+        { "id": "mean_nose_gap", "kind": "mean_of", "of": ["left_nose_gap", "right_nose_gap"] }
+      ],
+      "phase_order": ["breathing", "idle"],
+      "phases": {
+        "idle": {
+          "description": "Face the screen — arms hanging, shoulders relaxed (empty lungs). No max shrug.",
+          "when": {
+            "all": [
+              { "metric": "min_arm_hang", "op": "gte", "value": 0.008 }
+            ]
+          }
+        },
+        "breathing": {
+          "description": "A deep inhale lifts both shoulders a little toward the ears (nose–shoulder gap shortens); the exhale drops them (gap lengthens)",
+          "when": {
+            "all": [
+              { "metric": "min_arm_hang", "op": "gte", "value": 0.006 },
+              { "metric": "mean_nose_gap", "op": "lte", "value": 0.1 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

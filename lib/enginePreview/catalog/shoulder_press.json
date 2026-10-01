@@ -1,0 +1,141 @@
+{
+  "id": "shoulder_press",
+  "display_name": "Shoulder press",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.5,
+  "identity": {
+    "kind": "shoulder_press",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "required_metrics": ["min_elbow_angle", "max_wrist_rel", "wrist_span"],
+    "ranges": {
+      "min_elbow_angle": [5, 185],
+      "max_wrist_rel": [-1.6, 0.5],
+      "wrist_span": [0.35, 2]
+    }
+  },
+  "placement": {
+    "padding_horizontal": 12,
+    "padding_vertical": 8,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow||right_elbow",
+      "left_wrist||right_wrist"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.2
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "max_wrist_rel",
+    "depth_metric_profile": "max_wrist_rel",
+    "ideal_face": -0.85,
+    "worst_face": -0.4,
+    "ideal_profile": -0.85,
+    "worst_profile": -0.4,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "left_elbow_angle", "kind": "angle3", "points": ["left_shoulder", "left_elbow", "left_wrist"], "side": "left" },
+        { "id": "right_elbow_angle", "kind": "angle3", "points": ["right_shoulder", "right_elbow", "right_wrist"], "side": "right" },
+        { "id": "min_elbow_angle", "kind": "min_of", "of": ["left_elbow_angle", "right_elbow_angle"] },
+        { "id": "left_wrist_rel", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_rel", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "max_wrist_rel", "kind": "max_of", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "min_wrist_rel", "kind": "min_of", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "wrist_span", "kind": "norm_dx", "a": "left_wrist", "b": "right_wrist", "ref_a": "left_shoulder", "ref_b": "right_shoulder" }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Rack — wrists at the shoulders, elbows bent, not a hang or a T",
+          "when": {
+            "all": [
+              { "metric": "max_wrist_rel", "op": "gte", "value": -0.32 },
+              { "metric": "max_wrist_rel", "op": "lte", "value": 0.35 },
+              { "metric": "min_elbow_angle", "op": "lte", "value": 130 },
+              { "metric": "wrist_span", "op": "lte", "value": 1.7 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Overhead lockout — wrists clearly above the shoulders, path stays close to midline (not a raise)",
+          "when": {
+            "all": [
+              { "metric": "min_wrist_rel", "op": "lte", "value": -0.5 },
+              { "metric": "min_elbow_angle", "op": "gte", "value": 140 },
+              { "metric": "wrist_span", "op": "lte", "value": 1.55 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Vertical press or return, wrists traveling above the shoulders",
+          "when": {
+            "all": [
+              { "metric": "max_wrist_rel", "op": "lt", "value": -0.32 },
+              { "metric": "max_wrist_rel", "op": "gt", "value": -0.85 },
+              { "metric": "wrist_span", "op": "lte", "value": 1.8 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "left_elbow_angle", "kind": "angle3", "points": ["left_shoulder", "left_elbow", "left_wrist"], "side": "left" },
+        { "id": "right_elbow_angle", "kind": "angle3", "points": ["right_shoulder", "right_elbow", "right_wrist"], "side": "right" },
+        { "id": "min_elbow_angle", "kind": "min_of", "of": ["left_elbow_angle", "right_elbow_angle"] },
+        { "id": "left_wrist_rel", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "left_hip" },
+        { "id": "right_wrist_rel", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_shoulder", "ref_a": "right_shoulder", "ref_b": "right_hip" },
+        { "id": "max_wrist_rel", "kind": "max_of", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "min_wrist_rel", "kind": "min_of", "of": ["left_wrist_rel", "right_wrist_rel"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Profile rack at the shoulders",
+          "when": {
+            "all": [
+              { "metric": "max_wrist_rel", "op": "gte", "value": -0.32 },
+              { "metric": "max_wrist_rel", "op": "lte", "value": 0.4 },
+              { "metric": "min_elbow_angle", "op": "lte", "value": 135 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Arms locked out overhead",
+          "when": {
+            "all": [
+              { "metric": "min_wrist_rel", "op": "lte", "value": -0.5 },
+              { "metric": "min_elbow_angle", "op": "gte", "value": 140 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Wrists traveling vertically",
+          "when": {
+            "all": [
+              { "metric": "max_wrist_rel", "op": "lt", "value": -0.32 },
+              { "metric": "max_wrist_rel", "op": "gt", "value": -0.85 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

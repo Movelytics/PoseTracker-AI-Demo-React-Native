@@ -1,12 +1,13 @@
 {
   "name": "app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "eas-build-pre-install": "node scripts/assert-env.js"
   },
   "dependencies": {
     "expo": "~54.0.33",
@@ -18,7 +19,7 @@
     "react-native": "0.81.5",
     "react-native-svg": "15.12.1",
     "react-native-webview": "^13.15.0",
-    "@posetracker/pose-estimation-react-native": "file:../../posetracker-rn-sdk/packages/pose-estimation-react-native"
+    "@pose-tracker/react-native-pose-estimation": "0.3.4"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

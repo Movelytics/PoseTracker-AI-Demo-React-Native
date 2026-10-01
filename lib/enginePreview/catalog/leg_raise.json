@@ -1,0 +1,97 @@
+{
+  "id": "leg_raise",
+  "display_name": "Leg raise",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_profile",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.7,
+  "identity": {
+    "kind": "leg_raise",
+    "same_view": true,
+    "min_active_duration": 0.3,
+    "required_metrics": ["raise_angle", "knee_angle"],
+    "ranges": {
+      "raise_angle": [10, 185],
+      "knee_angle": [140, 185]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 10
+  },
+  "placement": {
+    "box_width": 88,
+    "box_height": 50,
+    "box_x": 6,
+    "box_y": 30,
+    "silhouette": "supine",
+    "required_points": [
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.3
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_profile": "raise_angle",
+    "ideal_profile": 90,
+    "worst_profile": 130,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        { "id": "raise_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_ankle"], "side": "best" },
+        { "id": "knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "best" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" },
+        { "id": "left_ankle_height", "kind": "norm_rel_y", "a": "left_ankle", "b": "left_hip", "ref_a": "left_shoulder", "ref_b": "left_hip" },
+        { "id": "right_ankle_height", "kind": "norm_rel_y", "a": "right_ankle", "b": "right_hip", "ref_a": "right_shoulder", "ref_b": "right_hip" },
+        { "id": "ankle_height", "kind": "coalesce", "of": ["left_ankle_height", "right_ankle_height"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Lying horizontally with straight legs extended",
+          "when": {
+            "all": [
+              { "metric": "raise_angle", "op": "gte", "value": 155 },
+              { "metric": "knee_angle", "op": "gte", "value": 155 },
+              { "metric": "torso_tilt", "op": "gte", "value": 55 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Straight legs raised until the ankles are above the hips",
+          "when": {
+            "all": [
+              { "metric": "raise_angle", "op": "lte", "value": 110 },
+              { "metric": "knee_angle", "op": "gte", "value": 150 },
+              { "metric": "ankle_height", "op": "lte", "value": -0.15 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Straight legs rotating upward from the hips",
+          "when": {
+            "all": [
+              { "metric": "raise_angle", "op": "lt", "value": 155 },
+              { "metric": "raise_angle", "op": "gt", "value": 110 },
+              { "metric": "knee_angle", "op": "gte", "value": 150 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

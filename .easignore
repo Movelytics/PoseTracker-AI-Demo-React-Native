@@ -1,0 +1,33 @@
+# Replaces .gitignore for the EAS upload.
+# .env and yarn.lock stay in the archive so the store bundle has the
+# tracking token and the locked SDK version.
+
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.DS_Store
+
+play-store-key.json
+*-play-store*.json
+eas.local.json
+
+*.tsbuildinfo
+/ios
+/android
+.git

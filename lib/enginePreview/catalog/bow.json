@@ -1,0 +1,220 @@
+{
+  "id": "bow",
+  "display_name": "Bow",
+  "review": {
+    "skeleton": false,
+    "live": false
+  },
+  "type": "duration",
+  "lock": "require_profile",
+  "unsupported_view": "hint_only",
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 6,
+    "exit_frames": 10,
+    "angle_metric": "flex_angle",
+    "report_peak": "min"
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "flex_angle",
+    "depth_metric_profile": "flex_angle",
+    "track_phases": [
+      "hold"
+    ],
+    "ideal_face": 140,
+    "worst_face": 175,
+    "ideal_profile": 140,
+    "worst_profile": 175
+  },
+  "placement": {
+    "padding_horizontal": 16,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_elbow||right_elbow",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        {
+          "id": "flex_angle",
+          "kind": "angle3",
+          "points": [
+            "left_knee",
+            "left_hip",
+            "left_shoulder"
+          ],
+          "side": "left"
+        },
+        {
+          "id": "left_thigh_y",
+          "kind": "relative_y",
+          "a": "left_knee",
+          "b": "left_hip"
+        },
+        {
+          "id": "right_thigh_y",
+          "kind": "relative_y",
+          "a": "right_knee",
+          "b": "right_hip"
+        },
+        {
+          "id": "max_thigh_y",
+          "kind": "max_of",
+          "of": [
+            "left_thigh_y",
+            "right_thigh_y"
+          ]
+        },
+        {
+          "id": "left_ankle_y",
+          "kind": "relative_y",
+          "a": "left_ankle",
+          "b": "left_hip"
+        },
+        {
+          "id": "right_ankle_y",
+          "kind": "relative_y",
+          "a": "right_ankle",
+          "b": "right_hip"
+        },
+        {
+          "id": "min_ankle_y",
+          "kind": "min_of",
+          "of": [
+            "left_ankle_y",
+            "right_ankle_y"
+          ]
+        },
+        {
+          "id": "left_elbow_y",
+          "kind": "relative_y",
+          "a": "left_elbow",
+          "b": "left_hip"
+        },
+        {
+          "id": "right_elbow_y",
+          "kind": "relative_y",
+          "a": "right_elbow",
+          "b": "right_hip"
+        },
+        {
+          "id": "min_elbow_y",
+          "kind": "min_of",
+          "of": [
+            "left_elbow_y",
+            "right_elbow_y"
+          ]
+        },
+        {
+          "id": "left_wrist_ankle_x",
+          "kind": "abs_dx",
+          "a": "left_wrist",
+          "b": "left_ankle"
+        },
+        {
+          "id": "right_wrist_ankle_x",
+          "kind": "abs_dx",
+          "a": "right_wrist",
+          "b": "right_ankle"
+        },
+        {
+          "id": "max_wrist_ankle_x",
+          "kind": "max_of",
+          "of": [
+            "left_wrist_ankle_x",
+            "right_wrist_ankle_x"
+          ]
+        },
+        {
+          "id": "hip_to_shoulder",
+          "kind": "relative_y",
+          "a": "left_hip",
+          "b": "left_shoulder"
+        }
+      ],
+      "phase_order": [
+        "hold",
+        "rest"
+      ],
+      "phases": {
+        "hold": {
+          "description": "Bow — hips on the mat, thighs and chest lifted, hands holding the ankles",
+          "when": {
+            "all": [
+              {
+                "metric": "max_thigh_y",
+                "op": "lte",
+                "value": -0.08
+              },
+              {
+                "metric": "min_ankle_y",
+                "op": "lte",
+                "value": -0.2
+              },
+              {
+                "metric": "min_elbow_y",
+                "op": "lte",
+                "value": -0.22
+              },
+              {
+                "metric": "max_wrist_ankle_x",
+                "op": "lte",
+                "value": 0.1
+              },
+              {
+                "metric": "flex_angle",
+                "op": "lte",
+                "value": 160
+              }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Out of the stretch — standing or a different pose",
+          "when": {
+            "any": [
+              {
+                "metric": "max_thigh_y",
+                "op": "gt",
+                "value": -0.08
+              },
+              {
+                "metric": "min_ankle_y",
+                "op": "gt",
+                "value": -0.2
+              },
+              {
+                "metric": "min_elbow_y",
+                "op": "gt",
+                "value": -0.22
+              },
+              {
+                "metric": "max_wrist_ankle_x",
+                "op": "gt",
+                "value": 0.1
+              },
+              {
+                "metric": "flex_angle",
+                "op": "gt",
+                "value": 160
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

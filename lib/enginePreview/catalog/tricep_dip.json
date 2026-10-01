@@ -1,0 +1,100 @@
+{
+  "id": "tricep_dip",
+  "display_name": "Tricep dip",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_profile",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.55,
+  "identity": {
+    "kind": "tricep_dip",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "required_metrics": ["elbow_angle", "torso_tilt", "elbow_setback"],
+    "ranges": {
+      "elbow_angle": [40, 185],
+      "torso_tilt": [0, 50],
+      "elbow_setback": [0.05, 1.5]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 10
+  },
+  "placement": {
+    "padding_horizontal": 10,
+    "padding_vertical": 8,
+    "silhouette": "seated",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_elbow||right_elbow",
+      "left_wrist||right_wrist",
+      "left_hip||right_hip",
+      "left_knee||right_knee"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.25
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_profile": "elbow_angle",
+    "ideal_profile": 90,
+    "worst_profile": 130,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        { "id": "elbow_angle", "kind": "angle3", "points": ["left_shoulder", "left_elbow", "left_wrist"], "side": "best" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" },
+        { "id": "thigh_forward", "kind": "tilt_from_vertical", "points": ["left_hip", "left_knee"], "side": "best" },
+        { "id": "left_elbow_setback", "kind": "norm_dx", "a": "left_shoulder", "b": "left_elbow", "ref_a": "left_shoulder", "ref_b": "left_hip" },
+        { "id": "right_elbow_setback", "kind": "norm_dx", "a": "right_shoulder", "b": "right_elbow", "ref_a": "right_shoulder", "ref_b": "right_hip" },
+        { "id": "elbow_setback", "kind": "max_of", "of": ["left_elbow_setback", "right_elbow_setback"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Supported top — torso upright, legs forward, elbows extended behind",
+          "when": {
+            "all": [
+              { "metric": "elbow_angle", "op": "gte", "value": 145 },
+              { "metric": "torso_tilt", "op": "lte", "value": 40 },
+              { "metric": "thigh_forward", "op": "gte", "value": 25 },
+              { "metric": "elbow_setback", "op": "gte", "value": 0.06 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bottom — elbows behind the torso flexed to about 90°",
+          "when": {
+            "all": [
+              { "metric": "elbow_angle", "op": "lte", "value": 105 },
+              { "metric": "torso_tilt", "op": "lte", "value": 45 },
+              { "metric": "thigh_forward", "op": "gte", "value": 25 },
+              { "metric": "elbow_setback", "op": "gte", "value": 0.06 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Lowering or rising with elbows remaining behind the torso",
+          "when": {
+            "all": [
+              { "metric": "elbow_angle", "op": "gt", "value": 105 },
+              { "metric": "elbow_angle", "op": "lt", "value": 145 },
+              { "metric": "elbow_setback", "op": "gte", "value": 0.05 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

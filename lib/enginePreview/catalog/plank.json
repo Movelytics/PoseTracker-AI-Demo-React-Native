@@ -1,0 +1,113 @@
+{
+  "id": "plank",
+  "display_name": "Plank",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "duration",
+  "lock": "require_profile",
+  "unsupported_view": "reject",
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 8,
+    "exit_frames": 8,
+    "angle_metric": "body_line",
+    "report_peak": "min"
+  },
+  "placement": {
+    "box_width": 88,
+    "box_height": 50,
+    "box_x": 6,
+    "box_y": 30,
+    "silhouette": "plank",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_elbow||right_elbow",
+      "left_wrist||right_wrist",
+      "left_hip||right_hip",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        {
+          "id": "body_line",
+          "kind": "angle3",
+          "points": ["left_shoulder", "left_hip", "left_ankle"],
+          "side": "best"
+        },
+        {
+          "id": "body_tilt",
+          "kind": "tilt_from_vertical",
+          "points": ["left_shoulder", "left_ankle"],
+          "side": "best"
+        },
+        {
+          "id": "elbow_angle",
+          "kind": "angle3",
+          "points": ["left_shoulder", "left_elbow", "left_wrist"],
+          "side": "best"
+        },
+        {
+          "id": "knee_angle",
+          "kind": "angle3",
+          "points": ["left_hip", "left_knee", "left_ankle"],
+          "side": "best"
+        },
+        { "id": "left_elbow_floor", "kind": "relative_y", "a": "left_elbow", "b": "left_wrist" },
+        { "id": "right_elbow_floor", "kind": "relative_y", "a": "right_elbow", "b": "right_wrist" },
+        { "id": "elbow_floor", "kind": "min_of", "of": ["left_elbow_floor", "right_elbow_floor"] }
+      ],
+      "phase_order": ["hold", "rest"],
+      "phases": {
+        "hold": {
+          "description": "High plank (arms ~180°) or forearm plank (elbows ~90°). Hips ~160° (shoulder–hip–ankle), knees long, body near-horizontal",
+          "when": {
+            "all": [
+              { "metric": "body_line", "op": "gte", "value": 148 },
+              { "metric": "body_tilt", "op": "gte", "value": 55 },
+              { "metric": "knee_angle", "op": "gte", "value": 150 },
+              {
+                "any": [
+                  { "metric": "elbow_angle", "op": "gte", "value": 155 },
+                  {
+                    "all": [
+                      { "metric": "elbow_angle", "op": "gte", "value": 72 },
+                      { "metric": "elbow_angle", "op": "lte", "value": 108 },
+                      { "metric": "elbow_floor", "op": "gte", "value": -0.045 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Standing, kneeling, collapsed, or arms neither locked nor in a forearm plank",
+          "when": {
+            "any": [
+              { "metric": "body_line", "op": "lt", "value": 148 },
+              { "metric": "body_tilt", "op": "lt", "value": 55 },
+              { "metric": "knee_angle", "op": "lt", "value": 150 },
+              {
+                "all": [
+                  { "metric": "elbow_angle", "op": "lt", "value": 155 },
+                  {
+                    "any": [
+                      { "metric": "elbow_angle", "op": "lt", "value": 72 },
+                      { "metric": "elbow_angle", "op": "gt", "value": 108 },
+                      { "metric": "elbow_floor", "op": "lt", "value": -0.045 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

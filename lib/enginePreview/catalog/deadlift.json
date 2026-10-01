@@ -1,0 +1,163 @@
+{
+  "id": "deadlift",
+  "display_name": "Deadlift",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.7,
+  "identity": {
+    "kind": "deadlift",
+    "same_view": true,
+    "min_active_duration": 0.3,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["max_wrist_ankle"],
+    "ranges": {
+      "max_wrist_ankle": [-1.6, 0.2],
+      "hinge_angle": [50, 185],
+      "knee_angle": [135, 185],
+      "torso_tilt": [0, 100]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 18,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip",
+      "right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle",
+      "left_wrist||right_wrist"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.3
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_wrist_floor",
+    "depth_metric_profile": "hinge_angle",
+    "ideal_face": 0.14,
+    "worst_face": 0.4,
+    "ideal_profile": 85,
+    "worst_profile": 125,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "left_wrist_knee", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_knee", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_knee", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_knee", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "max_wrist_knee", "kind": "max_of", "of": ["left_wrist_knee", "right_wrist_knee"] },
+        { "id": "min_wrist_knee", "kind": "min_of", "of": ["left_wrist_knee", "right_wrist_knee"] },
+        { "id": "left_wrist_ankle", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_ankle", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_ankle", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_ankle", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "max_wrist_ankle", "kind": "max_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] },
+        { "id": "min_wrist_ankle", "kind": "min_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] },
+        { "id": "left_wrist_floor", "kind": "norm_dy", "a": "left_wrist", "b": "left_ankle", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_floor", "kind": "norm_dy", "a": "right_wrist", "b": "right_ankle", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "min_wrist_floor", "kind": "min_of", "of": ["left_wrist_floor", "right_wrist_floor"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Lockout — bar up, wrists above the knees",
+          "when": {
+            "all": [
+              { "metric": "hips_level", "op": "gte", "value": 0.7 },
+              { "metric": "max_wrist_knee", "op": "lte", "value": -0.12 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bar at the floor — wrists near the ankles, still above them and below the knees",
+          "when": {
+            "all": [
+              { "metric": "hips_level", "op": "gte", "value": 0.55 },
+              { "metric": "min_wrist_knee", "op": "gte", "value": 0.08 },
+              { "metric": "min_wrist_ankle", "op": "gte", "value": -0.38 },
+              { "metric": "max_wrist_ankle", "op": "lte", "value": -0.03 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Bar traveling — wrists have left the knees but are not yet at the ankles",
+          "when": {
+            "all": [
+              { "metric": "max_wrist_knee", "op": "gt", "value": -0.18 },
+              { "metric": "min_wrist_ankle", "op": "lt", "value": -0.38 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "hinge_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "best" },
+        { "id": "knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "best" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" },
+        { "id": "left_wrist_knee", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_knee", "ref_a": "left_hip", "ref_b": "left_ankle" },
+        { "id": "right_wrist_knee", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_knee", "ref_a": "right_hip", "ref_b": "right_ankle" },
+        { "id": "max_wrist_knee", "kind": "max_of", "of": ["left_wrist_knee", "right_wrist_knee"] },
+        { "id": "min_wrist_knee", "kind": "min_of", "of": ["left_wrist_knee", "right_wrist_knee"] },
+        { "id": "left_wrist_ankle", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_ankle", "ref_a": "left_hip", "ref_b": "left_ankle" },
+        { "id": "right_wrist_ankle", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_ankle", "ref_a": "right_hip", "ref_b": "right_ankle" },
+        { "id": "max_wrist_ankle", "kind": "max_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] },
+        { "id": "min_wrist_ankle", "kind": "min_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing lockout — hips and knees extended, wrists above the knees",
+          "when": {
+            "all": [
+              { "metric": "hinge_angle", "op": "gte", "value": 160 },
+              { "metric": "knee_angle", "op": "gte", "value": 160 },
+              { "metric": "torso_tilt", "op": "lte", "value": 22 },
+              { "metric": "max_wrist_knee", "op": "lte", "value": -0.1 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Deep hip hinge — bar at the floor, wrists near the ankles and still above them",
+          "when": {
+            "all": [
+              { "metric": "hinge_angle", "op": "lte", "value": 115 },
+              { "metric": "knee_angle", "op": "gte", "value": 145 },
+              { "metric": "torso_tilt", "op": "gte", "value": 45 },
+              { "metric": "min_wrist_ankle", "op": "gte", "value": -0.42 },
+              { "metric": "max_wrist_ankle", "op": "lte", "value": -0.02 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Torso folding from the hips, bar traveling between knees and ankles",
+          "when": {
+            "all": [
+              { "metric": "hinge_angle", "op": "lt", "value": 160 },
+              { "metric": "hinge_angle", "op": "gt", "value": 115 },
+              { "metric": "knee_angle", "op": "gte", "value": 145 },
+              { "metric": "torso_tilt", "op": "gte", "value": 8 },
+              { "metric": "max_wrist_knee", "op": "gt", "value": -0.16 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -21,7 +21,7 @@ import {
   type JumpHeightEvent,
   type JumpSummaryEvent,
   type PostureEvent,
-} from "@posetracker/pose-estimation-react-native";
+} from "@pose-tracker/react-native-pose-estimation";
 import { POSETRACKER_TOKEN } from "@env";
 import BrandHeader from "../components/BrandHeader";
 import ExerciseStage from "../components/ExerciseStage";

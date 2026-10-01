@@ -1,0 +1,101 @@
+{
+  "id": "chair_side_stretch",
+  "display_name": "Chair side stretch",
+  "review": {
+    "skeleton": true,
+    "live": true
+  },
+  "type": "repetition",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.5,
+  "identity": {
+    "kind": "chair_side_stretch",
+    "same_view": true
+  },
+  "cycle": {
+    "kind": "side_reach",
+    "points": ["left_wrist", "right_wrist", "left_elbow", "right_elbow"],
+    "anchor": "nose",
+    "min_lift": 0.24,
+    "min_cross": 0.22,
+    "min_shoulder_lift": 0.08,
+    "min_lean": 0.1,
+    "min_turn_duration": 0.5,
+    "max_head_drop": 0.2,
+    "guide": {
+      "kind": "reach_zone",
+      "rx": 0.09,
+      "ry": 0.08
+    }
+  },
+  "placement": {
+    "box_width": 30,
+    "box_height": 34,
+    "min_shoulder_span": 0.12,
+    "max_shoulder_span": 0.24,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder"
+    ]
+  },
+  "grade": {
+    "mode": "reach_path",
+    "depth_metric_face": "reach_lift",
+    "ideal_face": 0.84,
+    "worst_face": 0.4,
+    "require_depth": false
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "shoulder_level",
+          "kind": "alignment_horizontal",
+          "points": ["left_shoulder", "right_shoulder"]
+        },
+        {
+          "id": "right_shoulder_up",
+          "kind": "relative_y",
+          "a": "left_shoulder",
+          "b": "right_shoulder"
+        },
+        {
+          "id": "left_shoulder_up",
+          "kind": "relative_y",
+          "a": "right_shoulder",
+          "b": "left_shoulder"
+        }
+      ],
+      "phase_order": ["idle", "reach_left", "reach_right"],
+      "phases": {
+        "idle": {
+          "description": "Face the camera. Fit your torso in the small zone — shoulder width about one-third of half the frame. Right hand reaches the top-left zone; left hand the top-right. Hold the stretch until the box reaches your hand, then sit tall to count.",
+          "when": {
+            "all": [
+              { "metric": "shoulder_level", "op": "gte", "value": 0.72 }
+            ]
+          }
+        },
+        "reach_left": {
+          "description": "Lean right, left shoulder high, left hand reaching out past the head. Spine stays long — no forward fold.",
+          "when": {
+            "all": [
+              { "metric": "left_shoulder_up", "op": "gte", "value": 0.02 }
+            ]
+          }
+        },
+        "reach_right": {
+          "description": "Lean left, right shoulder high, right hand reaching out past the head. Spine stays long — no forward fold.",
+          "when": {
+            "all": [
+              { "metric": "right_shoulder_up", "op": "gte", "value": 0.02 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,186 @@
+{
+  "id": "push_up",
+  "display_name": "Push-up",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "require_profile_side": "any",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.8,
+  "identity": {
+    "kind": "push_up",
+    "same_view": true,
+    "min_active_duration": 0.3,
+    "reject_span_growth": 0.05,
+    "required_metrics": [
+      "shoulder_below_elbow"
+    ],
+    "ranges": {
+      "torso_horizontal": [15, 90],
+      "shoulder_below_elbow": [-0.35, 0.25],
+      "ankle_elbow": [-0.08, 0.35],
+      "wrist_ankle": [-0.08, 0.35],
+      "min_arm_ratio": [0.7, 2.4],
+      "elbow_angle": [25, 180]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "box_width": 88,
+    "box_height": 50,
+    "box_x": 6,
+    "box_y": 30,
+    "silhouette": "plank",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow||right_elbow",
+      "left_wrist||right_wrist"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.3
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_arm_ratio",
+    "depth_metric_profile": "elbow_angle",
+    "ideal_face": 1.05,
+    "worst_face": 1.22,
+    "ideal_profile": 72,
+    "worst_profile": 120,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "left_arm_ratio",
+          "kind": "segment_ratio",
+          "points": ["left_shoulder", "left_elbow", "left_wrist"]
+        },
+        {
+          "id": "right_arm_ratio",
+          "kind": "segment_ratio",
+          "points": ["right_shoulder", "right_elbow", "right_wrist"]
+        },
+        { "id": "min_arm_ratio", "kind": "min_of", "of": ["left_arm_ratio", "right_arm_ratio"] },
+        { "id": "left_shoulder_elbow", "kind": "relative_y", "a": "left_shoulder", "b": "left_elbow" },
+        { "id": "right_shoulder_elbow", "kind": "relative_y", "a": "right_shoulder", "b": "right_elbow" },
+        { "id": "shoulder_below_elbow", "kind": "min_of", "of": ["left_shoulder_elbow", "right_shoulder_elbow"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "High plank facing the camera — both arms extended. Hips/knees/ankles are often lost once the chest drops; idle only needs the arms",
+          "when": {
+            "all": [
+              { "metric": "left_arm_ratio", "op": "gte", "value": 1.25 },
+              { "metric": "right_arm_ratio", "op": "gte", "value": 1.25 },
+              { "metric": "shoulder_below_elbow", "op": "lt", "value": 0 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bottom — chest in front of the hips/knees/ankles, so only the arms remain. Shoulders at or below the elbows, arms no longer extended",
+          "when": {
+            "all": [
+              { "metric": "min_arm_ratio", "op": "lte", "value": 1.18 },
+              { "metric": "shoulder_below_elbow", "op": "gte", "value": 0 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Lowering or rising — arm ratios only (lower body is occluded by the torso)",
+          "when": {
+            "all": [
+              { "metric": "min_arm_ratio", "op": "lt", "value": 1.25 },
+              { "metric": "min_arm_ratio", "op": "gt", "value": 1.18 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        {
+          "id": "elbow_angle",
+          "kind": "angle3",
+          "points": ["left_shoulder", "left_elbow", "left_wrist"],
+          "side": "best"
+        },
+        { "id": "left_shoulder_elbow", "kind": "relative_y", "a": "left_shoulder", "b": "left_elbow" },
+        { "id": "right_shoulder_elbow", "kind": "relative_y", "a": "right_shoulder", "b": "right_elbow" },
+        { "id": "shoulder_below_elbow", "kind": "min_of", "of": ["left_shoulder_elbow", "right_shoulder_elbow"] },
+        {
+          "id": "torso_horizontal",
+          "kind": "tilt_from_vertical",
+          "points": ["left_shoulder", "left_hip"],
+          "side": "best"
+        },
+        {
+          "id": "body_line",
+          "kind": "angle3",
+          "points": ["left_shoulder", "left_hip", "left_ankle"],
+          "side": "best"
+        },
+        { "id": "left_ankle_elbow", "kind": "relative_y", "a": "left_ankle", "b": "left_elbow" },
+        { "id": "right_ankle_elbow", "kind": "relative_y", "a": "right_ankle", "b": "right_elbow" },
+        { "id": "ankle_elbow", "kind": "mean_of", "of": ["left_ankle_elbow", "right_ankle_elbow"] },
+        { "id": "left_wrist_ankle", "kind": "relative_y", "a": "left_wrist", "b": "left_ankle" },
+        { "id": "right_wrist_ankle", "kind": "relative_y", "a": "right_wrist", "b": "right_ankle" },
+        { "id": "wrist_ankle", "kind": "mean_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "High plank from the side — body horizontal, elbow extended (shoulder–elbow–wrist)",
+          "when": {
+            "all": [
+              { "metric": "torso_horizontal", "op": "gte", "value": 55 },
+              { "metric": "body_line", "op": "gte", "value": 145 },
+              { "metric": "elbow_angle", "op": "gte", "value": 148 },
+              { "metric": "ankle_elbow", "op": "gte", "value": -0.04 },
+              { "metric": "wrist_ankle", "op": "gte", "value": -0.04 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bottom — classic elbow angle (shoulder–elbow–wrist) at or below 78°, still a floor plank",
+          "when": {
+            "all": [
+              { "metric": "torso_horizontal", "op": "gte", "value": 55 },
+              { "metric": "body_line", "op": "gte", "value": 135 },
+              { "metric": "elbow_angle", "op": "lte", "value": 78 },
+              { "metric": "ankle_elbow", "op": "gte", "value": -0.04 },
+              { "metric": "wrist_ankle", "op": "gte", "value": -0.04 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Lowering or rising — elbow flexing between 78° and 148° while the body stays a horizontal plank",
+          "when": {
+            "all": [
+              { "metric": "torso_horizontal", "op": "gte", "value": 55 },
+              { "metric": "body_line", "op": "gte", "value": 135 },
+              { "metric": "elbow_angle", "op": "gt", "value": 78 },
+              { "metric": "elbow_angle", "op": "lt", "value": 148 },
+              { "metric": "ankle_elbow", "op": "gte", "value": -0.04 },
+              { "metric": "wrist_ankle", "op": "gte", "value": -0.04 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

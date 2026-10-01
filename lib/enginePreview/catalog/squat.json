@@ -1,0 +1,186 @@
+{
+  "id": "squat",
+  "display_name": "Squat",
+  "review": {
+    "skeleton": true,
+    "live": true
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.5,
+  "identity": {
+    "kind": "squat",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["left_leg_ratio", "right_leg_ratio", "sagittal_angle"],
+    "ranges": {
+      "left_leg_ratio": [0, 1.45],
+      "right_leg_ratio": [0, 1.45],
+      "sagittal_angle": [40, 185]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 20,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.35
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_leg_ratio",
+    "depth_metric_profile": "sagittal_angle",
+    "debug_alt_metric_profile": "torso_leg_angle",
+    "ideal_face": 0.12,
+    "worst_face": 0.55,
+    "ideal_profile": 90,
+    "worst_profile": 150,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "left_leg_ratio",
+          "kind": "segment_ratio_y",
+          "points": ["left_hip", "left_knee", "left_ankle"]
+        },
+        {
+          "id": "right_leg_ratio",
+          "kind": "segment_ratio_y",
+          "points": ["right_hip", "right_knee", "right_ankle"]
+        },
+        { "id": "min_leg_ratio", "kind": "min_of", "of": ["left_leg_ratio", "right_leg_ratio"] },
+        { "id": "leg_ratio_diff", "kind": "abs_diff", "of": ["left_leg_ratio", "right_leg_ratio"] },
+        { "id": "left_hip_knee_delta", "kind": "relative_y", "a": "left_hip", "b": "left_knee" },
+        { "id": "right_hip_knee_delta", "kind": "relative_y", "a": "right_hip", "b": "right_knee" },
+        { "id": "max_hip_knee_delta", "kind": "max_of", "of": ["left_hip_knee_delta", "right_hip_knee_delta"] },
+        { "id": "hip_knee_diff", "kind": "abs_diff", "of": ["left_hip_knee_delta", "right_hip_knee_delta"] },
+        {
+          "id": "left_shin_vertical",
+          "kind": "alignment_vertical",
+          "points": ["left_knee", "left_ankle"]
+        },
+        {
+          "id": "right_shin_vertical",
+          "kind": "alignment_vertical",
+          "points": ["right_knee", "right_ankle"]
+        },
+        {
+          "id": "min_shin_vertical",
+          "kind": "min_of",
+          "of": ["left_shin_vertical", "right_shin_vertical"]
+        },
+        {
+          "id": "knees_level",
+          "kind": "alignment_horizontal",
+          "points": ["left_knee", "right_knee"]
+        }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing — both legs extended, shins upright, knees level",
+          "when": {
+            "all": [
+              { "metric": "left_leg_ratio", "op": "exists" },
+              { "metric": "right_leg_ratio", "op": "exists" },
+              { "metric": "min_leg_ratio", "op": "gte", "value": 0.68 },
+              { "metric": "leg_ratio_diff", "op": "lte", "value": 0.22 },
+              { "metric": "min_shin_vertical", "op": "gte", "value": 0.72 },
+              { "metric": "knees_level", "op": "gte", "value": 0.55 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Both hips dropping toward knees together (not a walk / lunge)",
+          "when": {
+            "all": [
+              { "metric": "left_leg_ratio", "op": "lt", "value": 0.68 },
+              { "metric": "right_leg_ratio", "op": "lt", "value": 0.68 },
+              { "metric": "leg_ratio_diff", "op": "lte", "value": 0.3 },
+              { "metric": "hip_knee_diff", "op": "lte", "value": 0.1 },
+              { "metric": "left_hip_knee_delta", "op": "lt", "value": -0.01 },
+              { "metric": "right_hip_knee_delta", "op": "lt", "value": -0.01 },
+              { "metric": "knees_level", "op": "gte", "value": 0.5 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bottom — both hips at or below knees in the 2D projection",
+          "when": {
+            "all": [
+              { "metric": "left_leg_ratio", "op": "exists" },
+              { "metric": "right_leg_ratio", "op": "exists" },
+              { "metric": "leg_ratio_diff", "op": "lte", "value": 0.32 },
+              {
+                "any": [
+                  { "metric": "max_hip_knee_delta", "op": "gte", "value": -0.01 },
+                  { "metric": "min_leg_ratio", "op": "lte", "value": 0.22 }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        {
+          "id": "knee_angle",
+          "kind": "angle3",
+          "points": ["left_hip", "left_knee", "left_ankle"],
+          "side": "best"
+        },
+        {
+          "id": "torso_leg_angle",
+          "kind": "angle3",
+          "points": ["left_shoulder", "left_hip", "left_knee"],
+          "side": "best"
+        },
+        {
+          "id": "sagittal_angle",
+          "kind": "coalesce",
+          "of": ["knee_angle", "torso_leg_angle"]
+        }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing — hip–knee–ankle (or torso–leg fallback) extended",
+          "when": { "metric": "sagittal_angle", "op": "gt", "value": 155 }
+        },
+        "eccentric": {
+          "description": "Descending — sagittal flexion",
+          "when": {
+            "all": [
+              { "metric": "sagittal_angle", "op": "lte", "value": 155 },
+              { "metric": "sagittal_angle", "op": "gt", "value": 115 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Bottom — hip–knee–ankle flexed (~parallel or deeper)",
+          "when": { "metric": "sagittal_angle", "op": "lte", "value": 115 }
+        }
+      }
+    }
+  }
+}

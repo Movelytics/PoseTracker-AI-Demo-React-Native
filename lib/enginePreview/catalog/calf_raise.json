@@ -1,0 +1,160 @@
+{
+  "id": "calf_raise",
+  "display_name": "Calf raise",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.4,
+  "identity": {
+    "kind": "calf_raise",
+    "same_view": true,
+    "min_active_duration": 0.18,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["min_knee_angle"],
+    "ranges": {
+      "mean_hip_norm_y": [0.7, 2.2],
+      "mean_shin_tilt": [0, 40],
+      "mean_shin_ratio": [0.85, 1.6],
+      "min_knee_angle": [150, 185]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 16,
+    "padding_vertical": 10,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_hip",
+      "right_hip",
+      "left_knee",
+      "right_knee",
+      "left_ankle",
+      "right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.15
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "mean_hip_norm_y",
+    "depth_metric_profile": "mean_shin_tilt",
+    "ideal_face": 1.06,
+    "worst_face": 1.18,
+    "ideal_profile": 12,
+    "worst_profile": 3.5,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "left_hip_norm_y", "kind": "norm_y", "a": "left_hip", "ref_a": "left_hip", "ref_b": "left_ankle" },
+        { "id": "right_hip_norm_y", "kind": "norm_y", "a": "right_hip", "ref_a": "right_hip", "ref_b": "right_ankle" },
+        { "id": "mean_hip_norm_y", "kind": "mean_of", "of": ["left_hip_norm_y", "right_hip_norm_y"] },
+        { "id": "left_shin_ratio", "kind": "norm_dy", "a": "left_knee", "b": "left_ankle", "ref_a": "left_hip", "ref_b": "left_knee" },
+        { "id": "right_shin_ratio", "kind": "norm_dy", "a": "right_knee", "b": "right_ankle", "ref_a": "right_hip", "ref_b": "right_knee" },
+        { "id": "mean_shin_ratio", "kind": "mean_of", "of": ["left_shin_ratio", "right_shin_ratio"] },
+        { "id": "shin_ratio_diff", "kind": "abs_diff", "of": ["left_shin_ratio", "right_shin_ratio"] },
+        { "id": "left_knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "left" },
+        { "id": "right_knee_angle", "kind": "angle3", "points": ["right_hip", "right_knee", "right_ankle"], "side": "right" },
+        { "id": "min_knee_angle", "kind": "min_of", "of": ["left_knee_angle", "right_knee_angle"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Flat feet, knees long — whole body down, not a squat",
+          "when": {
+            "all": [
+              { "metric": "mean_hip_norm_y", "op": "gte", "value": 1.17 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 160 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 },
+              { "metric": "shin_ratio_diff", "op": "lte", "value": 0.16 },
+              { "metric": "hips_level", "op": "gte", "value": 0.7 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Heels up — both legs rise together, shins stay long",
+          "when": {
+            "all": [
+              { "metric": "mean_hip_norm_y", "op": "lte", "value": 1.1 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 158 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 },
+              { "metric": "shin_ratio_diff", "op": "lte", "value": 0.18 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Rising or lowering on the balls of the feet",
+          "when": {
+            "all": [
+              { "metric": "mean_hip_norm_y", "op": "lt", "value": 1.17 },
+              { "metric": "mean_hip_norm_y", "op": "gt", "value": 1.1 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 158 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "left_shin_tilt", "kind": "tilt_from_vertical", "points": ["left_knee", "left_ankle"], "side": "left" },
+        { "id": "right_shin_tilt", "kind": "tilt_from_vertical", "points": ["right_knee", "right_ankle"], "side": "right" },
+        { "id": "mean_shin_tilt", "kind": "mean_of", "of": ["left_shin_tilt", "right_shin_tilt"] },
+        { "id": "left_shin_ratio", "kind": "norm_dy", "a": "left_knee", "b": "left_ankle", "ref_a": "left_hip", "ref_b": "left_knee" },
+        { "id": "right_shin_ratio", "kind": "norm_dy", "a": "right_knee", "b": "right_ankle", "ref_a": "right_hip", "ref_b": "right_knee" },
+        { "id": "mean_shin_ratio", "kind": "mean_of", "of": ["left_shin_ratio", "right_shin_ratio"] },
+        { "id": "left_knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "left" },
+        { "id": "right_knee_angle", "kind": "angle3", "points": ["right_hip", "right_knee", "right_ankle"], "side": "right" },
+        { "id": "min_knee_angle", "kind": "min_of", "of": ["left_knee_angle", "right_knee_angle"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Flat-foot profile, shin vertical, knee extended",
+          "when": {
+            "all": [
+              { "metric": "mean_shin_tilt", "op": "lte", "value": 4 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 160 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "On the ball of the foot — ankle forward, shin still long",
+          "when": {
+            "all": [
+              { "metric": "mean_shin_tilt", "op": "gte", "value": 8 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 158 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Ankles rising through a small plantarflexion",
+          "when": {
+            "all": [
+              { "metric": "mean_shin_tilt", "op": "gt", "value": 4 },
+              { "metric": "mean_shin_tilt", "op": "lt", "value": 8 },
+              { "metric": "min_knee_angle", "op": "gte", "value": 158 },
+              { "metric": "mean_shin_ratio", "op": "gte", "value": 0.88 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "id": "side_lunge",
+  "alias_of": "lunge",
+  "display_name": "Side lunge",
+  "review": {
+    "skeleton": true,
+    "live": false
+  }
+}

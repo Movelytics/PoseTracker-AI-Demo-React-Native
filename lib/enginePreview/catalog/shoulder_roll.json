@@ -1,0 +1,91 @@
+{
+  "id": "shoulder_roll",
+  "display_name": "Shoulder roll",
+  "review": {
+    "skeleton": true,
+    "live": true
+  },
+  "type": "repetition",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.4,
+  "identity": {
+    "kind": "shoulder_roll",
+    "same_view": true
+  },
+  "cycle": {
+    "kind": "orbit",
+    "points": ["left_shoulder", "right_shoulder"],
+    "anchor": "nose",
+    "min_radius": 0.01,
+    "min_lift": 0.016,
+    "min_turn_duration": 0.35,
+    "max_anchor_drift": 0.09,
+    "min_arm_hang": 0.008,
+    "mirror": true,
+    "scale_anchor": "face",
+    "max_scale_delta": 0.1,
+    "guide": {
+      "kind": "orbit_rings",
+      "rx": 0.01,
+      "ry": 0.032
+    }
+  },
+  "placement": {
+    "padding_horizontal": 8,
+    "padding_vertical": 8,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow",
+      "right_elbow"
+    ]
+  },
+  "grade": {
+    "mode": "orbit_lift",
+    "depth_metric_face": "orbit_lift",
+    "ideal_face": 0.055,
+    "worst_face": 0.016,
+    "require_depth": false
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "left_arm_hang",
+          "kind": "relative_y",
+          "a": "left_elbow",
+          "b": "left_shoulder"
+        },
+        {
+          "id": "right_arm_hang",
+          "kind": "relative_y",
+          "a": "right_elbow",
+          "b": "right_shoulder"
+        },
+        { "id": "min_arm_hang", "kind": "min_of", "of": ["left_arm_hang", "right_arm_hang"] }
+      ],
+      "phase_order": ["idle", "orbiting"],
+      "phases": {
+        "idle": {
+          "description": "Face the screen — arms hanging, shoulders at rest (bottom of the oval)",
+          "when": {
+            "all": [
+              { "metric": "min_arm_hang", "op": "gte", "value": 0.008 }
+            ]
+          }
+        },
+        "orbiting": {
+          "description": "Shoulders trace a tall vertical oval — left and right in opposite directions (internal vs external)",
+          "when": {
+            "all": [
+              { "metric": "min_arm_hang", "op": "gte", "value": 0.006 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

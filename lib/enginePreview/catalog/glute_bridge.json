@@ -1,0 +1,96 @@
+{
+  "id": "glute_bridge",
+  "display_name": "Glute bridge",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_profile",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.6,
+  "identity": {
+    "kind": "glute_bridge",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "required_metrics": ["bridge_angle"],
+    "ranges": {
+      "bridge_angle": [0, 190]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 10
+  },
+  "placement": {
+    "box_width": 88,
+    "box_height": 50,
+    "box_x": 6,
+    "box_y": 30,
+    "silhouette": "supine",
+    "required_points": [
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "end_range",
+    "from_phases": ["idle", "eccentric"],
+    "min_descent_duration": 0.2
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_profile": "bridge_angle",
+    "ideal_profile": 175,
+    "worst_profile": 145,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "bridge_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "best" },
+        { "id": "knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "best" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Lying with hips low, knees bent, torso nearly horizontal",
+          "when": {
+            "all": [
+              { "metric": "bridge_angle", "op": "lte", "value": 140 },
+              { "metric": "knee_angle", "op": "gte", "value": 50 },
+              { "metric": "knee_angle", "op": "lte", "value": 130 },
+              { "metric": "torso_tilt", "op": "gte", "value": 55 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Shoulders, hips and knees approaching one line",
+          "when": {
+            "all": [
+              { "metric": "bridge_angle", "op": "gte", "value": 155 },
+              { "metric": "knee_angle", "op": "gte", "value": 50 },
+              { "metric": "knee_angle", "op": "lte", "value": 130 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Hips rising as the shoulder-hip-knee angle opens",
+          "when": {
+            "all": [
+              { "metric": "bridge_angle", "op": "gt", "value": 140 },
+              { "metric": "bridge_angle", "op": "lt", "value": 155 },
+              { "metric": "knee_angle", "op": "gte", "value": 50 },
+              { "metric": "knee_angle", "op": "lte", "value": 130 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

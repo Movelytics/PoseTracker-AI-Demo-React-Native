@@ -1,0 +1,89 @@
+{
+  "id": "lateral_raise",
+  "display_name": "Lateral raise",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.5,
+  "identity": {
+    "kind": "lateral_raise",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "required_metrics": ["left_abduct", "right_abduct"],
+    "ranges": {
+      "left_abduct": [0, 160],
+      "right_abduct": [0, 160],
+      "min_abduct": [0, 160],
+      "max_abduct": [0, 175]
+    }
+  },
+  "placement": {
+    "padding_horizontal": 16,
+    "padding_vertical": 8,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow",
+      "right_elbow",
+      "left_hip||right_hip"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.2
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_abduct",
+    "ideal_face": 92,
+    "worst_face": 70,
+    "track_phases": ["end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "left_abduct", "kind": "angle3", "points": ["left_elbow", "left_shoulder", "left_hip"], "side": "left" },
+        { "id": "right_abduct", "kind": "angle3", "points": ["right_elbow", "right_shoulder", "right_hip"], "side": "right" },
+        { "id": "min_abduct", "kind": "min_of", "of": ["left_abduct", "right_abduct"] },
+        { "id": "max_abduct", "kind": "max_of", "of": ["left_abduct", "right_abduct"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Arms by the sides — both elbow–shoulder–hip angles closed",
+          "when": {
+            "all": [
+              { "metric": "max_abduct", "op": "lte", "value": 42 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "T-shape — both arms abducted to ~90°, not a press overhead",
+          "when": {
+            "all": [
+              { "metric": "min_abduct", "op": "gte", "value": 78 },
+              { "metric": "max_abduct", "op": "lte", "value": 120 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Both arms abducting or lowering between the hang and the T",
+          "when": {
+            "all": [
+              { "metric": "min_abduct", "op": "gt", "value": 40 },
+              { "metric": "max_abduct", "op": "lt", "value": 78 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

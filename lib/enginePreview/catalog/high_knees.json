@@ -1,0 +1,159 @@
+{
+  "id": "high_knees",
+  "display_name": "High knees",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.18,
+  "identity": {
+    "kind": "high_knees",
+    "same_view": true,
+    "min_active_duration": 0.1,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["left_thigh_y", "right_thigh_y", "hips_level"],
+    "ranges": {
+      "left_thigh_y": [-0.08, 0.55],
+      "right_thigh_y": [-0.08, 0.55],
+      "hips_level": [0.35, 1]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 15,
+    "padding_vertical": 8,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip",
+      "right_hip",
+      "left_knee",
+      "right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "end_range",
+    "from_phases": ["idle", "eccentric"],
+    "min_descent_duration": 0.08
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_thigh_y",
+    "depth_metric_profile": "min_hip_angle",
+    "ideal_face": 0.0,
+    "worst_face": 0.12,
+    "ideal_profile": 90,
+    "worst_profile": 130,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "left_thigh_y", "kind": "relative_y", "a": "left_knee", "b": "left_hip" },
+        { "id": "right_thigh_y", "kind": "relative_y", "a": "right_knee", "b": "right_hip" },
+        { "id": "min_thigh_y", "kind": "min_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "max_thigh_y", "kind": "max_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "thigh_y_diff", "kind": "abs_diff", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing tall — both thighs long, hips level, torso upright",
+          "when": {
+            "all": [
+              { "metric": "hips_level", "op": "gte", "value": 0.75 },
+              { "metric": "min_thigh_y", "op": "gte", "value": 0.16 },
+              { "metric": "thigh_y_diff", "op": "lte", "value": 0.06 },
+              { "metric": "torso_tilt", "op": "lte", "value": 28 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "One knee at hip height (thigh ~parallel), the other leg still supporting, hips stay high",
+          "when": {
+            "all": [
+              { "metric": "hips_level", "op": "gte", "value": 0.65 },
+              { "metric": "min_thigh_y", "op": "lte", "value": 0.06 },
+              { "metric": "max_thigh_y", "op": "gte", "value": 0.14 },
+              { "metric": "thigh_y_diff", "op": "gte", "value": 0.1 },
+              { "metric": "torso_tilt", "op": "lte", "value": 32 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Driving or lowering one knee while the hips stay level",
+          "when": {
+            "all": [
+              { "metric": "hips_level", "op": "gte", "value": 0.65 },
+              { "metric": "thigh_y_diff", "op": "gte", "value": 0.04 },
+              { "metric": "min_thigh_y", "op": "lt", "value": 0.16 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "left_thigh_y", "kind": "relative_y", "a": "left_knee", "b": "left_hip" },
+        { "id": "right_thigh_y", "kind": "relative_y", "a": "right_knee", "b": "right_hip" },
+        { "id": "min_thigh_y", "kind": "min_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "max_thigh_y", "kind": "max_of", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "thigh_y_diff", "kind": "abs_diff", "of": ["left_thigh_y", "right_thigh_y"] },
+        { "id": "left_hip_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "left" },
+        { "id": "right_hip_angle", "kind": "angle3", "points": ["right_shoulder", "right_hip", "right_knee"], "side": "right" },
+        { "id": "min_hip_angle", "kind": "min_of", "of": ["left_hip_angle", "right_hip_angle"] },
+        { "id": "max_hip_angle", "kind": "max_of", "of": ["left_hip_angle", "right_hip_angle"] },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing in profile — both hips open, torso upright",
+          "when": {
+            "all": [
+              { "metric": "min_thigh_y", "op": "gte", "value": 0.16 },
+              { "metric": "thigh_y_diff", "op": "lte", "value": 0.06 },
+              { "metric": "min_hip_angle", "op": "gte", "value": 150 },
+              { "metric": "torso_tilt", "op": "lte", "value": 28 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Drive thigh ~parallel (hip ~90°) while the support hip stays open",
+          "when": {
+            "all": [
+              { "metric": "min_thigh_y", "op": "lte", "value": 0.06 },
+              { "metric": "max_thigh_y", "op": "gte", "value": 0.14 },
+              { "metric": "thigh_y_diff", "op": "gte", "value": 0.1 },
+              { "metric": "min_hip_angle", "op": "lte", "value": 115 },
+              { "metric": "max_hip_angle", "op": "gte", "value": 145 },
+              { "metric": "torso_tilt", "op": "lte", "value": 32 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Driving or lowering one thigh while remaining upright",
+          "when": {
+            "all": [
+              { "metric": "thigh_y_diff", "op": "gte", "value": 0.04 },
+              { "metric": "min_thigh_y", "op": "lt", "value": 0.16 },
+              { "metric": "min_hip_angle", "op": "lt", "value": 155 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

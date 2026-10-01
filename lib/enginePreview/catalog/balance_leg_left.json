@@ -1,0 +1,144 @@
+{
+  "id": "balance_leg_left",
+  "display_name": "Balance left leg",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "duration",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 8,
+    "exit_frames": 12
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "right_thigh_y",
+    "depth_metric_profile": "right_knee_angle",
+    "ideal_face": 0.0,
+    "worst_face": 0.14,
+    "ideal_profile": 90,
+    "worst_profile": 140,
+    "track_phases": ["hold"]
+  },
+  "placement": {
+    "padding_horizontal": 15,
+    "padding_vertical": 8,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee",
+      "right_knee",
+      "left_ankle||right_ankle"
+    ]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "left_thigh_own", "kind": "relative_y", "a": "left_knee", "b": "left_hip" },
+        { "id": "left_thigh_opp", "kind": "relative_y", "a": "left_knee", "b": "right_hip" },
+        { "id": "left_thigh_y", "kind": "coalesce", "of": ["left_thigh_own", "left_thigh_opp"] },
+        { "id": "right_thigh_own", "kind": "relative_y", "a": "right_knee", "b": "right_hip" },
+        { "id": "right_thigh_opp", "kind": "relative_y", "a": "right_knee", "b": "left_hip" },
+        { "id": "right_thigh_y", "kind": "coalesce", "of": ["right_thigh_own", "right_thigh_opp"] },
+        { "id": "left_ankle_own", "kind": "relative_y", "a": "left_ankle", "b": "left_hip" },
+        { "id": "left_ankle_opp", "kind": "relative_y", "a": "left_ankle", "b": "right_hip" },
+        { "id": "left_ankle_y", "kind": "coalesce", "of": ["left_ankle_own", "left_ankle_opp"] },
+        { "id": "right_ankle_own", "kind": "relative_y", "a": "right_ankle", "b": "right_hip" },
+        { "id": "right_ankle_opp", "kind": "relative_y", "a": "right_ankle", "b": "left_hip" },
+        { "id": "right_ankle_y", "kind": "coalesce", "of": ["right_ankle_own", "right_ankle_opp"] },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" }
+      ],
+      "phase_order": ["hold", "rest"],
+      "phases": {
+        "hold": {
+          "description": "Face: stand on the left — right knee closer to the hips. The right hip may vanish in front of that knee",
+          "when": {
+            "all": [
+              { "metric": "left_thigh_y", "op": "gte", "value": 0.14 },
+              { "metric": "left_ankle_y", "op": "gte", "value": 0.28 },
+              { "metric": "torso_tilt", "op": "lte", "value": 34 },
+              {
+                "any": [
+                  { "metric": "right_thigh_y", "op": "lte", "value": 0.08 },
+                  { "metric": "right_ankle_y", "op": "lte", "value": 0.3 }
+                ]
+              }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Right knee back down the support thigh, or the left support is no longer long",
+          "when": {
+            "any": [
+              { "metric": "left_thigh_y", "op": "lt", "value": 0.14 },
+              { "metric": "right_thigh_y", "op": "gt", "value": 0.16 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "left_thigh_y", "kind": "relative_y", "a": "left_knee", "b": "left_hip" },
+        { "id": "right_thigh_y", "kind": "relative_y", "a": "right_knee", "b": "right_hip" },
+        { "id": "left_ankle_y", "kind": "relative_y", "a": "left_ankle", "b": "left_hip" },
+        { "id": "right_ankle_y", "kind": "relative_y", "a": "right_ankle", "b": "right_hip" },
+        { "id": "right_shin_y", "kind": "relative_y", "a": "right_ankle", "b": "right_knee" },
+        { "id": "left_knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "left" },
+        { "id": "right_knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "right" },
+        { "id": "left_hip_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "left" },
+        { "id": "right_hip_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "right" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" }
+      ],
+      "phase_order": ["hold", "rest"],
+      "phases": {
+        "hold": {
+          "description": "Profile: left support long. Right knee ~90° high in front (ankle in front) or heel raised behind",
+          "when": {
+            "all": [
+              { "metric": "left_thigh_y", "op": "gte", "value": 0.14 },
+              { "metric": "left_knee_angle", "op": "gte", "value": 148 },
+              { "metric": "left_hip_angle", "op": "gte", "value": 145 },
+              { "metric": "torso_tilt", "op": "lte", "value": 34 },
+              { "metric": "right_knee_angle", "op": "gte", "value": 65 },
+              { "metric": "right_knee_angle", "op": "lte", "value": 125 },
+              {
+                "any": [
+                  { "metric": "right_thigh_y", "op": "lte", "value": 0.08 },
+                  {
+                    "all": [
+                      { "metric": "right_shin_y", "op": "lte", "value": 0.02 },
+                      { "metric": "right_thigh_y", "op": "gte", "value": 0.06 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "rest": {
+          "description": "Right knee no longer near 90°, or the left support is no longer standing tall",
+          "when": {
+            "any": [
+              { "metric": "right_knee_angle", "op": "gt", "value": 125 },
+              { "metric": "right_knee_angle", "op": "lt", "value": 65 },
+              { "metric": "left_thigh_y", "op": "lt", "value": 0.14 },
+              { "metric": "left_knee_angle", "op": "lt", "value": 148 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

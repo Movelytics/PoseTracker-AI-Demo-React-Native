@@ -1,0 +1,148 @@
+{
+  "id": "bicep_curl",
+  "display_name": "Bicep curl",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "auto",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.5,
+  "identity": {
+    "kind": "bicep_curl",
+    "same_view": true,
+    "min_active_duration": 0.25,
+    "required_metrics": ["min_elbow_drop"],
+    "ranges": {
+      "min_elbow_drop": [0.15, 1.4],
+      "min_forearm_y": [-1.4, 1.8],
+      "left_elbow_angle": [5, 185],
+      "right_elbow_angle": [5, 185]
+    }
+  },
+  "placement": {
+    "padding_horizontal": 12,
+    "padding_vertical": 8,
+    "silhouette": "upper",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_elbow||right_elbow",
+      "left_wrist||right_wrist"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.2
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "min_forearm_y",
+    "depth_metric_profile": "min_elbow",
+    "ideal_face": -0.45,
+    "worst_face": 0.14,
+    "ideal_profile": 45,
+    "worst_profile": 95,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "left_forearm_y", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_elbow", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_forearm_y", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_elbow", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "min_forearm_y", "kind": "min_of", "of": ["left_forearm_y", "right_forearm_y"] },
+        { "id": "left_wrist_drop", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_drop", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "min_wrist_drop", "kind": "min_of", "of": ["left_wrist_drop", "right_wrist_drop"] },
+        { "id": "left_elbow_drop", "kind": "norm_rel_y", "a": "left_elbow", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_elbow_drop", "kind": "norm_rel_y", "a": "right_elbow", "b": "right_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "min_elbow_drop", "kind": "min_of", "of": ["left_elbow_drop", "right_elbow_drop"] },
+        { "id": "wrist_span", "kind": "norm_dx", "a": "left_wrist", "b": "right_wrist", "ref_a": "left_shoulder", "ref_b": "right_shoulder" }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Face hang — wrists well below the elbows, upper arms down (no 2D elbow angle)",
+          "when": {
+            "all": [
+              { "metric": "min_forearm_y", "op": "gte", "value": 0.38 },
+              { "metric": "min_wrist_drop", "op": "gte", "value": 0.7 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.22 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Face curl top — wrist has risen to the elbow (forearm foreshortened), elbows still pinned",
+          "when": {
+            "all": [
+              { "metric": "min_forearm_y", "op": "lte", "value": 0.1 },
+              { "metric": "min_wrist_drop", "op": "lte", "value": 0.5 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.18 },
+              { "metric": "wrist_span", "op": "lte", "value": 1.35 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Face curling or lowering — forearm Y shrinking, elbows stay below the shoulders",
+          "when": {
+            "all": [
+              { "metric": "min_forearm_y", "op": "lt", "value": 0.38 },
+              { "metric": "min_wrist_drop", "op": "gt", "value": 0.15 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.18 }
+            ]
+          }
+        }
+      }
+    },
+    "profile": {
+      "metrics": [
+        { "id": "left_elbow_angle", "kind": "angle3", "points": ["left_shoulder", "left_elbow", "left_wrist"], "side": "left" },
+        { "id": "right_elbow_angle", "kind": "angle3", "points": ["right_shoulder", "right_elbow", "right_wrist"], "side": "right" },
+        { "id": "min_elbow", "kind": "min_of", "of": ["left_elbow_angle", "right_elbow_angle"] },
+        { "id": "left_wrist_drop", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "left_hip" },
+        { "id": "right_wrist_drop", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_shoulder", "ref_a": "right_shoulder", "ref_b": "right_hip" },
+        { "id": "min_wrist_drop", "kind": "min_of", "of": ["left_wrist_drop", "right_wrist_drop"] },
+        { "id": "left_elbow_drop", "kind": "norm_rel_y", "a": "left_elbow", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "left_hip" },
+        { "id": "right_elbow_drop", "kind": "norm_rel_y", "a": "right_elbow", "b": "right_shoulder", "ref_a": "right_shoulder", "ref_b": "right_hip" },
+        { "id": "min_elbow_drop", "kind": "min_of", "of": ["left_elbow_drop", "right_elbow_drop"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Profile hang — elbow open, wrist low",
+          "when": {
+            "all": [
+              { "metric": "min_elbow", "op": "gte", "value": 145 },
+              { "metric": "min_wrist_drop", "op": "gte", "value": 0.7 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.22 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Elbow flexed, upper arm still hanging",
+          "when": {
+            "all": [
+              { "metric": "min_elbow", "op": "lte", "value": 75 },
+              { "metric": "min_wrist_drop", "op": "lte", "value": 0.45 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.15 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Curling or lowering in profile",
+          "when": {
+            "all": [
+              { "metric": "min_elbow", "op": "lt", "value": 145 },
+              { "metric": "min_wrist_drop", "op": "gt", "value": 0.2 },
+              { "metric": "min_elbow_drop", "op": "gte", "value": 0.15 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

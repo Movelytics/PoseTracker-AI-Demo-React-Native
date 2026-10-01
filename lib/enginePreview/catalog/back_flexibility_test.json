@@ -1,0 +1,117 @@
+{
+  "id": "back_flexibility_test",
+  "display_name": "Back flexibility test",
+  "category": "physical_test",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_profile",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.45,
+  "identity": {
+    "kind": "back_flexibility",
+    "same_view": true,
+    "min_active_duration": 0.2,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["torso_tilt", "hinge_angle", "knee_angle"],
+    "ranges": {
+      "torso_tilt": [0, 120],
+      "hinge_angle": [40, 185],
+      "knee_angle": [110, 185],
+      "shank_tilt": [0, 45],
+      "max_wrist_ankle": [-2, 1.5]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 12,
+    "padding_vertical": 8,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder||right_shoulder",
+      "left_hip||right_hip",
+      "left_knee||right_knee",
+      "left_ankle||right_ankle",
+      "left_wrist||right_wrist"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.25
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_profile": "torso_tilt",
+    "ideal_profile": 75,
+    "worst_profile": 22,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "report": {
+    "ankle_above_sole": 0.08,
+    "method": "Side-view trunk flexion from COCO-17. The phone is upright, so image vertical is up. Trunk angle is shoulder–hip versus vertical. Hip angle is shoulder–hip–knee. Knee angle is hip–knee–ankle (180° is straight). The shin angle uses a horizontal through the ankle joint, not the floor: the malleolus sits about 0.08 hip–ankle lengths above the sole, so a wrist below the ankle is a hand toward the floor, not a tracking error. Reach is that wrist-versus-ankle drop, arms hanging down — not centimetres. Camera height uses the same floor / mid / high adjustment as the other movements for the phase gates, the grade, and these flags. Not a Modified Schober score.",
+    "capture": [
+      { "id": "torso_tilt", "mode": "max", "label": "trunk_angle_deg" },
+      { "id": "hinge_angle", "mode": "min", "label": "hip_angle_deg" },
+      { "id": "knee_angle", "mode": "min", "label": "knee_angle_deg" },
+      { "id": "shank_tilt", "mode": "max", "label": "shank_from_vertical_deg" },
+      { "id": "shank_tilt", "mode": "max", "label": "ground_ankle_knee_deg", "transform": "complement90" },
+      { "id": "max_wrist_ankle", "mode": "max", "label": "wrist_to_ankle" }
+    ]
+  },
+  "views": {
+    "profile": {
+      "metrics": [
+        { "id": "hinge_angle", "kind": "angle3", "points": ["left_shoulder", "left_hip", "left_knee"], "side": "best" },
+        { "id": "knee_angle", "kind": "angle3", "points": ["left_hip", "left_knee", "left_ankle"], "side": "best" },
+        { "id": "torso_tilt", "kind": "tilt_from_vertical", "points": ["left_shoulder", "left_hip"], "side": "best" },
+        { "id": "shank_tilt", "kind": "tilt_from_vertical", "points": ["left_ankle", "left_knee"], "side": "best" },
+        { "id": "left_wrist_ankle", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_ankle", "ref_a": "left_hip", "ref_b": "left_ankle" },
+        { "id": "right_wrist_ankle", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_ankle", "ref_a": "right_hip", "ref_b": "right_ankle" },
+        { "id": "max_wrist_ankle", "kind": "max_of", "of": ["left_wrist_ankle", "right_wrist_ankle"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Standing tall — hips and knees extended, arms hanging, trunk upright",
+          "when": {
+            "all": [
+              { "metric": "hinge_angle", "op": "gte", "value": 155 },
+              { "metric": "knee_angle", "op": "gte", "value": 155 },
+              { "metric": "torso_tilt", "op": "lte", "value": 18 },
+              { "metric": "max_wrist_ankle", "op": "lte", "value": -0.4 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Forward fold — trunk inclined, legs straight and stacked, arms hanging toward the floor",
+          "when": {
+            "all": [
+              { "metric": "torso_tilt", "op": "gte", "value": 48 },
+              { "metric": "hinge_angle", "op": "lte", "value": 120 },
+              { "metric": "knee_angle", "op": "gte", "value": 150 },
+              { "metric": "max_wrist_ankle", "op": "gte", "value": -0.28 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Folding or returning, knees kept straight",
+          "when": {
+            "all": [
+              { "metric": "torso_tilt", "op": "gt", "value": 16 },
+              { "metric": "hinge_angle", "op": "lt", "value": 160 },
+              { "metric": "knee_angle", "op": "gte", "value": 150 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

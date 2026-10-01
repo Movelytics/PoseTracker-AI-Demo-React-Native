@@ -1,0 +1,126 @@
+{
+  "id": "chair_forward_fold",
+  "display_name": "Chair forward fold",
+  "review": {
+    "skeleton": true,
+    "live": true
+  },
+  "type": "duration",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "camera_elevation": {
+    "mode": "auto",
+    "proxy": "seated",
+    "sample_idle_frames": 10
+  },
+  "hold": {
+    "phase": "hold",
+    "enter_frames": 6,
+    "exit_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 8,
+    "padding_vertical": 8,
+    "silhouette": "seated",
+    "required_points": [
+      "left_ankle",
+      "right_ankle",
+      "left_knee",
+      "right_knee",
+      "left_shoulder",
+      "right_shoulder"
+    ]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        {
+          "id": "left_shin_tilt",
+          "kind": "tilt_from_vertical",
+          "points": ["left_ankle", "left_knee"],
+          "side": "left"
+        },
+        {
+          "id": "right_shin_tilt",
+          "kind": "tilt_from_vertical",
+          "points": ["right_ankle", "right_knee"],
+          "side": "right"
+        },
+        {
+          "id": "max_shin_tilt",
+          "kind": "max_of",
+          "of": ["left_shin_tilt", "right_shin_tilt"]
+        },
+        {
+          "id": "left_above",
+          "kind": "norm_rel_y",
+          "a": "left_knee",
+          "b": "left_shoulder",
+          "ref_a": "left_knee",
+          "ref_b": "left_ankle"
+        },
+        {
+          "id": "right_above",
+          "kind": "norm_rel_y",
+          "a": "right_knee",
+          "b": "right_shoulder",
+          "ref_a": "right_knee",
+          "ref_b": "right_ankle"
+        },
+        {
+          "id": "min_above",
+          "kind": "min_of",
+          "of": ["left_above", "right_above"]
+        },
+        {
+          "id": "max_above",
+          "kind": "max_of",
+          "of": ["left_above", "right_above"]
+        },
+        {
+          "id": "left_side",
+          "kind": "norm_dx",
+          "a": "left_shoulder",
+          "b": "left_knee",
+          "ref_a": "left_knee",
+          "ref_b": "left_ankle"
+        },
+        {
+          "id": "right_side",
+          "kind": "norm_dx",
+          "a": "right_shoulder",
+          "b": "right_knee",
+          "ref_a": "right_knee",
+          "ref_b": "right_ankle"
+        },
+        {
+          "id": "max_side",
+          "kind": "max_of",
+          "of": ["left_side", "right_side"]
+        }
+      ],
+      "phase_order": ["hold", "planted"],
+      "phases": {
+        "hold": {
+          "description": "Shins upright. Both shoulders above the knees — they may sit a little to the sides. Head and arms may move. Each second here is one count.",
+          "when": {
+            "all": [
+              { "metric": "max_shin_tilt", "op": "lte", "value": 22 },
+              { "metric": "min_above", "op": "gte", "value": 0.04 },
+              { "metric": "max_above", "op": "lte", "value": 0.55 },
+              { "metric": "max_side", "op": "lte", "value": 0.95 }
+            ]
+          }
+        },
+        "planted": {
+          "description": "Sit back on the chair, both feet flat, shins upright — then fold forward.",
+          "when": {
+            "all": [
+              { "metric": "max_shin_tilt", "op": "lte", "value": 22 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

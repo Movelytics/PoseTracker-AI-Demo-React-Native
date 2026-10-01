@@ -1,0 +1,104 @@
+{
+  "id": "low_impact_jack",
+  "display_name": "Low-impact jack",
+  "review": {
+    "skeleton": true,
+    "live": false
+  },
+  "type": "repetition",
+  "lock": "require_face",
+  "unsupported_view": "hint_only",
+  "min_rep_duration": 0.3,
+  "identity": {
+    "kind": "low_impact_jack",
+    "same_view": true,
+    "min_active_duration": 0.15,
+    "reject_span_growth": 0.04,
+    "required_metrics": ["ankle_span", "wrist_span"],
+    "ranges": {
+      "ankle_span": [0.05, 4],
+      "wrist_span": [0.15, 6]
+    }
+  },
+  "camera_elevation": {
+    "mode": "auto",
+    "sample_idle_frames": 12
+  },
+  "placement": {
+    "padding_horizontal": 18,
+    "padding_vertical": 8,
+    "silhouette": "full",
+    "required_points": [
+      "nose",
+      "left_shoulder",
+      "right_shoulder",
+      "left_wrist",
+      "right_wrist",
+      "left_ankle",
+      "right_ankle"
+    ]
+  },
+  "counter": {
+    "trigger_phase": "idle",
+    "from_phases": ["eccentric", "end_range"],
+    "min_descent_duration": 0.12
+  },
+  "grade": {
+    "mode": "depth_only",
+    "require_depth": true,
+    "depth_metric_face": "jack_quality",
+    "ideal_face": 100,
+    "worst_face": 0,
+    "track_phases": ["eccentric", "end_range"]
+  },
+  "views": {
+    "face": {
+      "metrics": [
+        { "id": "hips_level", "kind": "alignment_horizontal", "points": ["left_hip", "right_hip"], "side": "left" },
+        { "id": "ankle_span", "kind": "norm_dx", "a": "left_ankle", "b": "right_ankle", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "wrist_span", "kind": "norm_dx", "a": "left_wrist", "b": "right_wrist", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "left_wrist_rel", "kind": "norm_rel_y", "a": "left_wrist", "b": "left_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "right_wrist_rel", "kind": "norm_rel_y", "a": "right_wrist", "b": "right_shoulder", "ref_a": "left_shoulder", "ref_b": "right_shoulder" },
+        { "id": "min_wrist_rel", "kind": "min_of", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "max_wrist_rel", "kind": "max_of", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "wrist_rel_diff", "kind": "abs_diff", "of": ["left_wrist_rel", "right_wrist_rel"] },
+        { "id": "ankle_open", "kind": "linear_map", "of": ["ankle_span"], "from": [0.52, 1.18], "to": [0, 100] },
+        { "id": "wrist_open", "kind": "linear_map", "of": ["wrist_span"], "from": [1.1, 2.4], "to": [0, 100] },
+        { "id": "wrist_height", "kind": "linear_map", "of": ["max_wrist_rel"], "from": [0.9, -0.3], "to": [0, 100] },
+        { "id": "arm_sync", "kind": "linear_map", "of": ["wrist_rel_diff"], "from": [0.85, 0.06], "to": [0, 100] },
+        { "id": "jack_quality", "kind": "mean_of", "of": ["ankle_open", "wrist_open", "wrist_height", "arm_sync"] }
+      ],
+      "phase_order": ["idle", "end_range", "eccentric"],
+      "phases": {
+        "idle": {
+          "description": "Mostly closed — feet in, arms down (a soft step-in still counts)",
+          "when": {
+            "all": [
+              { "metric": "ankle_span", "op": "lte", "value": 0.62 },
+              { "metric": "wrist_span", "op": "lte", "value": 1.28 }
+            ]
+          }
+        },
+        "end_range": {
+          "description": "Step-out — one foot wide with both arms raised (no jump, and a short step still counts)",
+          "when": {
+            "all": [
+              { "metric": "ankle_span", "op": "gte", "value": 0.68 },
+              { "metric": "wrist_span", "op": "gte", "value": 1.28 },
+              { "metric": "max_wrist_rel", "op": "lte", "value": 0.55 }
+            ]
+          }
+        },
+        "eccentric": {
+          "description": "Stepping and sweeping the arms",
+          "when": {
+            "any": [
+              { "metric": "ankle_span", "op": "gt", "value": 0.62 },
+              { "metric": "wrist_span", "op": "gt", "value": 1.28 }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
